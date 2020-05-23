@@ -10,14 +10,36 @@
   <link rel="stylesheet" href="stylesheet.css?v=1.0">
 </head>
 
-<body>
-  <script src="main.js"></script>
-  <label for="habit_name">Habit Name:</label>
-  <input type="text" id="habit_name" name="habit_name" />
-  <label for="spaces">Number of Spaces:</label>
-  <input type="number" id="spaces" name="spaces" min="1" max="10000" />
-  <button class="submit_button" type="button">
-    Generate
-  </button>
+<body style="text-align: center">
+  <script type="text/javascript" src="scripts/rhill-voronoi-core.js"></script>
+  <script type="text/javascript" src="scripts/main.js"></script>
+  <div class="noprint">
+    <br>
+    <label for="habit_name">Habit Name</label>
+    <br>
+    <input type="text" id="habit_name" name="habit_name" size="45" value="Habit" />
+    <br>
+    <br>
+    <label for="num_spaces">Number of Spaces</label><br>
+    <input type="number" id="num_spaces" name="num_spaces" min="2" max="5000" value="2" />
+    <br>
+    <br>
+    <button class="standard_button" type="button" onclick="Generate();">
+      Generate
+    </button>
+  </div>
+  <br>
+  <div>
+    <p id="display_title" style="width:850px; display: inline-block; font-size: 60px; margin:0px;"></p>
+    <br>
+    <div id="svg_container"></div>
+  </div>
+
+  <br>
+  <div class="noprint">
+    <button id="print_button" style="display:none;" class="standard_button" type="button" onclick="window.print();">
+      Print
+    </button>
+  </div>
 </body>
 </html>

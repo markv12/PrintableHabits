@@ -11,7 +11,7 @@ body{
   font-family: 'the_bold_font', sans-serif;
 }
 
-.submit_button{
+.standard_button{
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -24,11 +24,20 @@ body{
   font-family: 'the_bold_font', sans-serif;
   cursor: pointer;
 }
-.submit_button:hover {
+.standard_button:hover {
   background: #1d49aa;
 }
 
-.submit_button:focus {
+.standard_button:focus {
   outline: none;
   box-shadow: 0 0 0 3px #cbd6ee;
+}
+
+@media print
+{
+  .noprint {display:none;}
+}
+
+@media screen
+{
 }
