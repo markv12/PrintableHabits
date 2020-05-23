@@ -3,7 +3,6 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-
   <title>Printable Habits</title>
   <meta name="description" content="Printable Habits">
   <meta name="author" content="Scott Steffes">
@@ -11,35 +10,43 @@
 </head>
 
 <body style="text-align: center">
-  <script type="text/javascript" src="scripts/rhill-voronoi-core.js"></script>
-  <script type="text/javascript" src="scripts/main.js"></script>
   <div class="noprint">
     <br>
     <label for="habit_name">Habit Name</label>
     <br>
-    <input type="text" id="habit_name" name="habit_name" size="45" value="Habit" />
+    <input type="text" id="habit_name" name="habit_name" size="45" value="Habit Name" />
     <br>
     <br>
-    <label for="num_spaces">Number of Spaces</label><br>
-    <input type="number" id="num_spaces" name="num_spaces" min="2" max="5000" value="2" />
+    <label for="num_cells">Number of Cells</label>
+    <br>
+    <input type="number" id="num_cells" name="num_cells" min="2" max="5000" value="7" step="1"/>
     <br>
     <br>
-    <button class="standard_button" type="button" onclick="Generate();">
+    <label for="cell_size">Cell Size</label>
+    <br>
+    <input type="number" id="cell_size" name="cell_size" min="2" max="1000" value="80" step="1"/>
+    <br>
+    <br>
+    <label for="line_thickness">Line Thickness</label>
+    <br>
+    <input type="number" id="line_thickness" name="line_thickness" min="1" max="100" value="10" step="0.1"/>
+    <br>
+    <br>
+    <button class="generate_button" type="button" onclick="Generate();">
       Generate
     </button>
+    <button id="print_button" style="display:none; margin-left: 10px;" class="print_button" type="button" onclick="window.print();">
+      Print
+    </button>
+    <br>
   </div>
-  <br>
   <div>
-    <p id="display_title" style="width:850px; display: inline-block; font-size: 60px; margin:0px;"></p>
+    <p id="display_title" style="width:850px; display: inline-block; font-size: 80px; margin:0px;"></p>
+    <br>
     <br>
     <div id="svg_container"></div>
   </div>
-
-  <br>
-  <div class="noprint">
-    <button id="print_button" style="display:none;" class="standard_button" type="button" onclick="window.print();">
-      Print
-    </button>
-  </div>
+  <script type="text/javascript" src="scripts/rhill-voronoi-core.js"></script>
+  <script type="text/javascript" src="scripts/main.js"></script>
 </body>
 </html>
