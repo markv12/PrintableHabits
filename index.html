@@ -17,14 +17,19 @@
     <input type="text" id="habit_name" name="habit_name" size="45" value="Habit Name" />
     <br>
     <br>
+    <label for="habit_description">Habit Description (Optional)</label>
+    <br>
+    <textarea id="habit_description" name="habit_description" rows="4" cols="45"></textarea>
+    <br>
+    <br>
     <label for="num_cells">Number of Cells</label>
     <br>
-    <input type="number" id="num_cells" name="num_cells" min="2" max="5000" value="7" step="1"/>
+    <input type="number" id="num_cells" name="num_cells" min="2" max="5000" value="14" step="1"/>
     <br>
     <br>
     <label for="cell_size">Cell Size</label>
     <br>
-    <input type="number" id="cell_size" name="cell_size" min="2" max="1000" value="80" step="1"/>
+    <input type="number" id="cell_size" name="cell_size" min="2" max="1000" value="75" step="1"/>
     <br>
     <br>
     <label for="line_thickness">Line Thickness</label>
@@ -41,7 +46,8 @@
     <br>
   </div>
   <div>
-    <p id="display_title" style="width:850px; display: inline-block; font-size: 80px; margin:0px;"></p>
+    <p id="display_title" style="width:850px; display: inline-block; font-size: 80px; line-height:80px; margin:0px;"></p>
+    <p id="display_description" style="width:750px; display: inline-block; font-size: 25px; margin:0px;"></p>
     <br>
     <br>
     <div id="svg_container"></div>

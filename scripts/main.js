@@ -1,6 +1,7 @@
 "use strict";
 function Generate(){
   var habit_name = document.getElementById("habit_name").value;
+  var habit_desc = document.getElementById("habit_description").value;
   var num_cells_input = document.getElementById("num_cells");
   var num_cells = GetNumberFromInput(num_cells_input, 2, 5000);
 
@@ -11,6 +12,10 @@ function Generate(){
   var line_thickness = GetNumberFromInput(line_thickness_input, 1, 100);
 
   document.getElementById("display_title").innerHTML = habit_name;
+
+  var desc_element = document.getElementById("display_description");
+  desc_element.style.display = (habit_desc && habit_desc.trim()) ? "inline-block" : "none";
+  desc_element.innerHTML = habit_desc;
 
   var dimensions = GetDimensions(num_cells, cell_size);
   var y_decimal = num_cells/dimensions.x;
