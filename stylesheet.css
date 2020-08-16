@@ -45,7 +45,36 @@ button {
   background: #494949;
 }
 
+table.main_table {
+  margin-left:auto; 
+  margin-right:auto;
+  border: 2px solid black;
+  border-radius: 8px;
+  padding: 8px;
+}
 
+table.main_table table {
+  margin-left:auto; 
+  margin-right:auto;
+}
+
+table.main_table td {
+  padding: 5px;
+}
+
+.left_align {
+  text-align: left;
+}
+
+.right_align {
+  text-align: right;
+}
+
+input, textarea {
+  border: 1px solid black;
+  border-radius:7px;
+  padding: 4px;
+}
 
 @media print
 {
