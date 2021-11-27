@@ -14,7 +14,7 @@
     <table class="main_table">
       <tr>
         <td class="right_align">Habit Name: </td>
-        <td class="left_align"><input type="text" id="habit_name" name="habit_name" size="45" value="Habit Name" /></td>
+        <td class="left_align"><textarea id="habit_name" name="habit_name" rows="2" cols="42">Habit Name</textarea></td>
       </tr>
       <tr>
         <td>Habit&nbsp;<br>Description: </td>
@@ -26,19 +26,31 @@
             <tr>
               <td class="right_align">Number of Cells: </td>
               <td class="left_align">
-                <input style="width:75px;" type="number" id="num_cells" name="num_cells" min="2" max="5000" value="14" step="1"/>
+                <input style="width:60px;" type="number" id="num_cells" name="num_cells" min="2" max="5000" value="14" step="1"/>
               </td>
             </tr>
             <tr>
               <td class="right_align">Cell Size: </td>
               <td class="left_align">
-                <input style="width:75px;" type="number" id="cell_size" name="cell_size" min="2" max="1000" value="80" step="1"/>
+                <input style="width:60px;" type="number" id="cell_size" name="cell_size" min="2" max="1000" value="80" step="1"/>
               </td>
             </tr>
             <tr>
               <td class="right_align">Line Thickness: </td>
               <td class="left_align">
-                <input style="width:75px;" type="number" id="line_thickness" name="line_thickness" min="1" max="100" value="10" step="0.1"/>
+                <input style="width:60px;" type="number" id="line_thickness" name="line_thickness" min="1" max="100" value="10" step="0.1"/>
+              </td>
+            </tr>
+            <tr>
+              <td class="right_align">Add Dates: </td>
+              <td class="left_align">
+                <input type="checkbox" id="add_date_checkbox" name="add_date" onclick="AddDatesChanged();">
+              </td>
+            </tr>
+            <tr id="start_offset_container" style="display:none;">
+              <td class="right_align">Start Day Offset: </td>
+              <td class="left_align">
+                <input style="width:60px;" type="number" id="start_offset" name="start_offset" value="1" step="1"/>
               </td>
             </tr>
           </table>
@@ -57,12 +69,20 @@
     </table>
   </div>
   <div>
-    <p id="display_title" style="width:850px; display: inline-block; font-size: 80px; line-height:80px; margin:0px;"></p>
-    <p id="display_description" style="width:750px; display: inline-block; font-size: 25px; margin:0px;"></p>
+    <p id="display_title" style=""></p>
+    <p id="display_description" style=""></p>
     <br>
     <br>
     <div id="svg_container"></div>
   </div>
+  <script type="text/javascript">
+    function AddDatesChanged(){
+      var add_date = document.getElementById("add_date_checkbox").checked;
+      var start_offset_container = document.getElementById("start_offset_container");
+      start_offset_container.style.display = add_date ? "table-row" : "none";
+    }
+    
+  </script>
   <script type="text/javascript" src="scripts/rhill-voronoi-core.js"></script>
   <script type="text/javascript" src="scripts/main.js"></script>
 </body>

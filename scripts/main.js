@@ -11,6 +11,9 @@ function Generate(){
   var line_thickness_input = document.getElementById("line_thickness");
   var line_thickness = GetNumberFromInput(line_thickness_input, 1, 100);
 
+  let add_dates = document.getElementById("add_date_checkbox").checked;
+  let start_offset = parseFloat(document.getElementById("start_offset").value);
+
   document.getElementById("display_title").innerHTML = habit_name;
 
   var desc_element = document.getElementById("display_description");
@@ -28,18 +31,19 @@ function Generate(){
   var height = (dimensions.y + y_adjust) * cell_size;
 
   var bbox = {xl: 0, xr: width, yt: 0, yb: height}; // xl is x-left, xr is x-right, yt is y-top, and yb is y-bottom
-  var sites = GetVoronoiSites(num_cells, cell_size, dimensions, height);
+  var voronoi_sites = GetVoronoiSites(num_cells, cell_size, dimensions, height);
 
   var voronoi = new Voronoi();
-  var voronoi_diagram = voronoi.compute(sites, bbox);
+  var voronoi_diagram = voronoi.compute(voronoi_sites, bbox);
   var svgContainer = document.getElementById("svg_container");
   svgContainer.innerHTML = ""
-  svgContainer.appendChild(GenerateSVG(voronoi_diagram, width, height, line_thickness));
+  svgContainer.appendChild(GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, cell_size, start_offset));
   document.getElementById("print_button").style.display = "inline-block";
 }
 
-function GenerateSVG(voronoi_diagram, width, height, line_thickness){
-  const svg1 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, cell_size, start_offset){
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg1 = document.createElementNS(svgNS, "svg");
   svg1.setAttribute("width", width+6);
   svg1.setAttribute("height", height+6);
 
@@ -47,7 +51,7 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness){
   var rect_style_text = "stroke:rgb(0,0,0);stroke-width:" + line_thickness + ";fill-opacity:0;"
   for (var i = 0; i < voronoi_diagram.edges.length; i++) {
     var edge = voronoi_diagram.edges[i];
-    var svg_line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    var svg_line = document.createElementNS(svgNS, "line");
     svg_line.setAttribute("x1", edge.va.x+3);
     svg_line.setAttribute("y1", edge.va.y+3);
     svg_line.setAttribute("x2", edge.vb.x+3);
@@ -55,13 +59,42 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness){
     svg_line.setAttribute("style", line_style_text);
     svg1.appendChild(svg_line);
   }
-  var borderRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  var borderRect = document.createElementNS(svgNS, "rect");
   borderRect.setAttribute("x", 2);
   borderRect.setAttribute("y", 2);
   borderRect.setAttribute("width", width+1);
   borderRect.setAttribute("height", height+1);
   borderRect.setAttribute("style", rect_style_text);
   svg1.appendChild(borderRect);
+
+  if(add_dates){
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const today = new Date();
+    for (let i = 0; i < voronoi_diagram.cells.length; i++) {
+      let d = today.addDays(i+start_offset);
+      let center_point = GetCenterPointForCell(voronoi_diagram.cells[i]);
+      let newText = document.createElementNS(svgNS,"text");
+      newText.setAttributeNS(null,"x", center_point.x);     
+      newText.setAttributeNS(null,"y", center_point.y); 
+      newText.setAttributeNS(null, "text-anchor", "middle");
+      newText.setAttributeNS(null,"font-size",cell_size/6);
+
+      let line1 = document.createElementNS(svgNS, "tspan");
+      line1.setAttributeNS(null,"x", center_point.x);     
+      let textNode1 = document.createTextNode(months[d.getMonth()]);
+      line1.appendChild(textNode1);
+
+      let line2 = document.createElementNS(svgNS, "tspan");
+      line2.setAttributeNS(null,"dy", "1.1em");     
+      line2.setAttributeNS(null,"x", center_point.x);     
+      let textNode2 = document.createTextNode(d.getDate());
+      line2.appendChild(textNode2);
+
+      newText.appendChild(line1);
+      newText.appendChild(line2);
+      svg1.appendChild(newText);
+    }
+  }
 
   return svg1;
 }
@@ -115,4 +148,33 @@ function GetVoronoiSites(num_cells, cell_size, dimensions, max_height){
     sites.push({x: x_pos, y: y_pos});
   }
   return sites;
+}
+
+function GetCenterPointForCell(cell){
+  let vertex_count = cell.halfedges.length;
+  let xTotal = 0;
+  let yTotal = 0;
+  let total_length = 0;
+  for (var i = 0; i < cell.halfedges.length; i++) {
+    let edge = cell.halfedges[i].edge;
+    let edge_length = GetDistance(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
+    total_length += edge_length;
+    xTotal += ((edge.va.x + edge.vb.x)/2)*(edge_length);
+    yTotal += ((edge.va.y + edge.vb.y)/2)*(edge_length);
+  }
+  let x = (xTotal)/total_length;
+  let y = (yTotal)/total_length;
+  return {x: x, y: y};
+}
+
+function GetDistance(x1, y1, x2, y2){
+    let y = x2 - x1;
+    let x = y2 - y1;
+    return Math.sqrt(x * x + y * y);
+}
+
+Date.prototype.addDays = function(days) {
+  var date = new Date(this.valueOf());
+  date.setDate(date.getDate() + days);
+  return date;
 }

@@ -70,6 +70,23 @@ table.main_table td {
   text-align: right;
 }
 
+#display_title {
+  width:850px;
+  display: inline-block;
+  font-size: 80px;
+  line-height:80px;
+  margin:0px;
+  white-space: pre-line;
+}
+
+#display_description {
+  width:750px;
+  display: inline-block;
+  font-size: 25px;
+  margin:0px;
+  white-space: pre-line;
+}
+
 input, textarea {
   border: 1px solid black;
   border-radius:7px;
