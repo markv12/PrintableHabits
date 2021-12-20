@@ -1,4 +1,8 @@
 "use strict";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const svgNS = "http://www.w3.org/2000/svg";
+
 function Generate(){
   var habit_name = document.getElementById("habit_name").value;
   var habit_desc = document.getElementById("habit_description").value;
@@ -42,7 +46,6 @@ function Generate(){
 }
 
 function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, cell_size, start_offset){
-  const svgNS = "http://www.w3.org/2000/svg";
   const svg1 = document.createElementNS(svgNS, "svg");
   svg1.setAttribute("width", width+6);
   svg1.setAttribute("height", height+6);
@@ -68,25 +71,25 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, 
   svg1.appendChild(borderRect);
 
   if(add_dates){
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const today = new Date();
-    for (let i = 0; i < voronoi_diagram.cells.length; i++) {
+    let sorted_cells = CenterAndSortCells(voronoi_diagram.cells, cell_size);
+    for (let i = 0; i < sorted_cells.length; i++) {
       let d = today.addDays(i+start_offset);
-      let center_point = GetCenterPointForCell(voronoi_diagram.cells[i]);
+      let cell = sorted_cells[i];
       let newText = document.createElementNS(svgNS,"text");
-      newText.setAttributeNS(null,"x", center_point.x);     
-      newText.setAttributeNS(null,"y", center_point.y); 
+      newText.setAttributeNS(null,"x", cell.center_point.x);     
+      newText.setAttributeNS(null,"y", cell.center_point.y); 
       newText.setAttributeNS(null, "text-anchor", "middle");
       newText.setAttributeNS(null,"font-size",cell_size/6);
 
       let line1 = document.createElementNS(svgNS, "tspan");
-      line1.setAttributeNS(null,"x", center_point.x);     
+      line1.setAttributeNS(null,"x", cell.center_point.x);     
       let textNode1 = document.createTextNode(months[d.getMonth()]);
       line1.appendChild(textNode1);
 
       let line2 = document.createElementNS(svgNS, "tspan");
       line2.setAttributeNS(null,"dy", "1.1em");     
-      line2.setAttributeNS(null,"x", center_point.x);     
+      line2.setAttributeNS(null,"x", cell.center_point.x);     
       let textNode2 = document.createTextNode(d.getDate());
       line2.appendChild(textNode2);
 
@@ -97,6 +100,26 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, 
   }
 
   return svg1;
+}
+
+function CenterAndSortCells(cells, cell_size){
+  for (var i = 0; i < cells.length; i++) {
+    let cell = cells[i];
+    cell.center_point = GetCenterPointForCell(cell);
+  }
+  let line_height = cell_size*0.45;
+  cells.sort(function(a, b) {
+    let aCenter = a.center_point;
+    let bCenter = b.center_point;
+    let diffX =  aCenter.x - bCenter.x;
+    let diffY =  aCenter.y - bCenter.y;
+    if(Math.abs(diffY) < line_height){
+      return diffX;
+    } else{
+      return diffY;
+    }
+  });
+  return cells;
 }
 
 function GetNumberFromInput(num_input, min, max){
