@@ -2,44 +2,90 @@
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const svgNS = "http://www.w3.org/2000/svg";
+const HABIT_DATA_KEY = 'habitData';
+
+function InitializeData(){
+  const habitDataString = localStorage.getItem(HABIT_DATA_KEY);
+  if(habitDataString){
+    const habitData = JSON.parse(habitDataString);
+    document.getElementById("habit_name").value = habitData.habit_name;
+    document.getElementById("habit_description").value = habitData.habit_desc;
+    document.getElementById("num_cells").value = habitData.num_cells;
+    document.getElementById("cell_size").value = habitData.cell_size;
+    document.getElementById("line_thickness").value = habitData.line_thickness;
+    document.getElementById("add_date_checkbox").checked = habitData.add_dates;
+    document.getElementById("start_offset").value = habitData.start_offset;
+    GenerateFromData(habitData);
+  }
+}
+
 
 function Generate(){
-  var habit_name = document.getElementById("habit_name").value;
-  var habit_desc = document.getElementById("habit_description").value;
-  var num_cells_input = document.getElementById("num_cells");
-  var num_cells = GetNumberFromInput(num_cells_input, 2, 5000);
+  let habit_name = document.getElementById("habit_name").value;
+  let habit_desc = document.getElementById("habit_description").value;
+  let num_cells_input = document.getElementById("num_cells");
+  let num_cells = GetNumberFromInput(num_cells_input, 2, 5000);
 
-  var cell_size_input = document.getElementById("cell_size");
-  var cell_size = GetNumberFromInput(cell_size_input, 5, 1000);
+  let cell_size_input = document.getElementById("cell_size");
+  let cell_size = GetNumberFromInput(cell_size_input, 5, 1000);
 
-  var line_thickness_input = document.getElementById("line_thickness");
-  var line_thickness = GetNumberFromInput(line_thickness_input, 1, 100);
+  let line_thickness_input = document.getElementById("line_thickness");
+  let line_thickness = GetNumberFromInput(line_thickness_input, 1, 100);
 
   let add_dates = document.getElementById("add_date_checkbox").checked;
   let start_offset = parseFloat(document.getElementById("start_offset").value);
+  
+  let lastSeed = Math.random();
+
+  const habitData = {
+    habit_name,
+    habit_desc,
+    num_cells,
+    cell_size,
+    line_thickness,
+    add_dates,
+    start_offset,
+    lastSeed,
+  };
+
+  const habitDataString = JSON.stringify(habitData);
+  localStorage.setItem(HABIT_DATA_KEY, habitDataString);
+
+  GenerateFromData(habitData);
+}
+
+function GenerateFromData(habitData){
+  let habit_name = habitData.habit_name;
+  let habit_desc = habitData.habit_desc;
+  let num_cells = habitData.num_cells;
+  let cell_size = habitData.cell_size;
+  let line_thickness = habitData.line_thickness;
+  let add_dates = habitData.add_dates;
+  let start_offset = habitData.start_offset;
+  let lastSeed = habitData.lastSeed;
 
   document.getElementById("display_title").innerHTML = habit_name;
 
-  var desc_element = document.getElementById("display_description");
+  let desc_element = document.getElementById("display_description");
   desc_element.style.display = (habit_desc && habit_desc.trim()) ? "inline-block" : "none";
   desc_element.innerHTML = habit_desc;
 
-  var dimensions = GetDimensions(num_cells, cell_size);
-  var y_decimal = num_cells/dimensions.x;
-  var remainder = y_decimal - Math.floor(y_decimal);
+  let dimensions = GetDimensions(num_cells, cell_size);
+  let y_decimal = num_cells/dimensions.x;
+  let remainder = y_decimal - Math.floor(y_decimal);
   if(remainder == 0){
     remainder = 1;
   }
-  var y_adjust = remainder - 1;
-  var width = dimensions.x * cell_size;
-  var height = (dimensions.y + y_adjust) * cell_size;
+  let y_adjust = remainder - 1;
+  let width = dimensions.x * cell_size;
+  let height = (dimensions.y + y_adjust) * cell_size;
 
-  var bbox = {xl: 0, xr: width, yt: 0, yb: height}; // xl is x-left, xr is x-right, yt is y-top, and yb is y-bottom
-  var voronoi_sites = GetVoronoiSites(num_cells, cell_size, dimensions, height);
+  let bbox = {xl: 0, xr: width, yt: 0, yb: height}; // xl is x-left, xr is x-right, yt is y-top, and yb is y-bottom
+  let voronoi_sites = GetVoronoiSites(num_cells, cell_size, dimensions, height, lastSeed);
 
-  var voronoi = new Voronoi();
-  var voronoi_diagram = voronoi.compute(voronoi_sites, bbox);
-  var svgContainer = document.getElementById("svg_container");
+  let voronoi = new Voronoi();
+  let voronoi_diagram = voronoi.compute(voronoi_sites, bbox);
+  let svgContainer = document.getElementById("svg_container");
   svgContainer.innerHTML = ""
   svgContainer.appendChild(GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, cell_size, start_offset));
   document.getElementById("print_button").style.display = "inline-block";
@@ -50,11 +96,11 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, 
   svg1.setAttribute("width", width+6);
   svg1.setAttribute("height", height+6);
 
-  var line_style_text = "stroke:rgb(0,0,0);stroke-width:" + line_thickness + ";"
-  var rect_style_text = "stroke:rgb(0,0,0);stroke-width:" + line_thickness + ";fill-opacity:0;"
-  for (var i = 0; i < voronoi_diagram.edges.length; i++) {
-    var edge = voronoi_diagram.edges[i];
-    var svg_line = document.createElementNS(svgNS, "line");
+  let line_style_text = "stroke:rgb(0,0,0);stroke-width:" + line_thickness + ";"
+  let rect_style_text = "stroke:rgb(0,0,0);stroke-width:" + line_thickness + ";fill-opacity:0;"
+  for (let i = 0; i < voronoi_diagram.edges.length; i++) {
+    let edge = voronoi_diagram.edges[i];
+    let svg_line = document.createElementNS(svgNS, "line");
     svg_line.setAttribute("x1", edge.va.x+3);
     svg_line.setAttribute("y1", edge.va.y+3);
     svg_line.setAttribute("x2", edge.vb.x+3);
@@ -62,7 +108,7 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, 
     svg_line.setAttribute("style", line_style_text);
     svg1.appendChild(svg_line);
   }
-  var borderRect = document.createElementNS(svgNS, "rect");
+  let borderRect = document.createElementNS(svgNS, "rect");
   borderRect.setAttribute("x", 2);
   borderRect.setAttribute("y", 2);
   borderRect.setAttribute("width", width+1);
@@ -103,7 +149,7 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, 
 }
 
 function CenterAndSortCells(cells, cell_size){
-  for (var i = 0; i < cells.length; i++) {
+  for (let i = 0; i < cells.length; i++) {
     let cell = cells[i];
     cell.center_point = GetCenterPointForCell(cell);
   }
@@ -123,7 +169,7 @@ function CenterAndSortCells(cells, cell_size){
 }
 
 function GetNumberFromInput(num_input, min, max){
-  var the_value = num_input.value;
+  let the_value = num_input.value;
   if(the_value > max){
     the_value = max;
   } else if(the_value < min){
@@ -135,38 +181,39 @@ function GetNumberFromInput(num_input, min, max){
 }
 
 function GetDimensions(num_cells, cell_size){
-  var x = Math.floor(Math.sqrt(num_cells));
+  let x = Math.floor(Math.sqrt(num_cells));
   x = Math.floor(Math.min(1000, cell_size*x)/cell_size); //Ensure x doesn't make the chart too wide
-  var y = Math.ceil(num_cells/x);
+  let y = Math.ceil(num_cells/x);
   return {x:x, y:y};
 }
 
-function GetVoronoiSites(num_cells, cell_size, dimensions, max_height){
-  var half_cell_size = cell_size/2;
-  var adjust_scale = cell_size/1.2;
-  var half_adjust_scale = adjust_scale/2;
-  var sites = [];
+function GetVoronoiSites(num_cells, cell_size, dimensions, max_height, seed){
+  let rng = new RNG(seed);
+  let half_cell_size = cell_size/2;
+  let adjust_scale = cell_size/1.2;
+  let half_adjust_scale = adjust_scale/2;
+  let sites = [];
 
-  var remainder = num_cells % dimensions.x;
+  let remainder = num_cells % dimensions.x;
 
-  for (var i = 0; i < num_cells-remainder; i++) {
-    var x_index = i % dimensions.x;
-    var y_index = Math.floor(i/dimensions.x);
-    var x_pos = half_cell_size + (x_index * cell_size);
-    var y_pos = half_cell_size + (y_index * cell_size);
-    x_pos += (Math.random()*adjust_scale) - half_adjust_scale;
-    y_pos += (Math.random()*adjust_scale) - half_adjust_scale;
+  for (let i = 0; i < num_cells-remainder; i++) {
+    let x_index = i % dimensions.x;
+    let y_index = Math.floor(i/dimensions.x);
+    let x_pos = half_cell_size + (x_index * cell_size);
+    let y_pos = half_cell_size + (y_index * cell_size);
+    x_pos += (rng.NextFloat()*adjust_scale) - half_adjust_scale;
+    y_pos += (rng.NextFloat()*adjust_scale) - half_adjust_scale;
     sites.push({x: x_pos, y: y_pos});
   }
 
-  var last_y_index = Math.floor((num_cells-1)/dimensions.x);
-  var last_y_pos = half_cell_size + (last_y_index * cell_size);
-  var last_x_cell_size = (dimensions.x * cell_size)/remainder;
-  var half_last_x_cell_size = last_x_cell_size/2;
-  for (var i = 0; i < remainder; i++) {
-    var x_pos = half_last_x_cell_size + (i * last_x_cell_size);
-    x_pos += (Math.random()*adjust_scale) - half_adjust_scale;
-    var y_pos = last_y_pos + (Math.random()*adjust_scale) - half_adjust_scale;
+  let last_y_index = Math.floor((num_cells-1)/dimensions.x);
+  let last_y_pos = half_cell_size + (last_y_index * cell_size);
+  let last_x_cell_size = (dimensions.x * cell_size)/remainder;
+  let half_last_x_cell_size = last_x_cell_size/2;
+  for (let i = 0; i < remainder; i++) {
+    let x_pos = half_last_x_cell_size + (i * last_x_cell_size);
+    x_pos += (rng.NextFloat()*adjust_scale) - half_adjust_scale;
+    let y_pos = last_y_pos + (rng.NextFloat()*adjust_scale) - half_adjust_scale;
     y_pos = Math.min(max_height, y_pos);
     sites.push({x: x_pos, y: y_pos});
   }
@@ -178,7 +225,7 @@ function GetCenterPointForCell(cell){
   let xTotal = 0;
   let yTotal = 0;
   let total_length = 0;
-  for (var i = 0; i < cell.halfedges.length; i++) {
+  for (let i = 0; i < cell.halfedges.length; i++) {
     let edge = cell.halfedges[i].edge;
     let edge_length = GetDistance(edge.va.x, edge.va.y, edge.vb.x, edge.vb.y);
     total_length += edge_length;
@@ -197,7 +244,7 @@ function GetDistance(x1, y1, x2, y2){
 }
 
 Date.prototype.addDays = function(days) {
-  var date = new Date(this.valueOf());
+  let date = new Date(this.valueOf());
   date.setDate(date.getDate() + days);
   return date;
 }

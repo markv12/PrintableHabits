@@ -75,6 +75,9 @@
     <br>
     <div id="svg_container"></div>
   </div>
+  <script type="text/javascript" src="scripts/rng.js"></script>
+  <script type="text/javascript" src="scripts/rhill-voronoi-core.js"></script>
+  <script type="text/javascript" src="scripts/main.js"></script>
   <script type="text/javascript">
     function AddDatesChanged(){
       var add_date = document.getElementById("add_date_checkbox").checked;
@@ -82,8 +85,8 @@
       start_offset_container.style.display = add_date ? "table-row" : "none";
     }
     
+    InitializeData();
+    AddDatesChanged();
   </script>
-  <script type="text/javascript" src="scripts/rhill-voronoi-core.js"></script>
-  <script type="text/javascript" src="scripts/main.js"></script>
 </body>
 </html>
