@@ -41,6 +41,7 @@ function Generate(){
   let add_dates = document.getElementById("add_date_checkbox").checked;
   let start_offset = parseFloat(document.getElementById("start_offset").value);
   
+  let createdAtEpoch = Date.now();
   let lastSeed = Math.random();
 
   habitData = {
@@ -52,6 +53,7 @@ function Generate(){
     add_dates,
     start_offset,
     lastSeed,
+    createdAtEpoch,
   };
 
   const habitDataString = JSON.stringify(habitData);
@@ -69,9 +71,6 @@ function GenerateFromData(){
   let habit_desc = habitData.habit_desc;
   let num_cells = habitData.num_cells;
   let cell_size = habitData.cell_size;
-  let line_thickness = habitData.line_thickness;
-  let add_dates = habitData.add_dates;
-  let start_offset = habitData.start_offset;
   let lastSeed = habitData.lastSeed;
 
   document.getElementById("display_title").innerHTML = habit_name;
@@ -97,11 +96,14 @@ function GenerateFromData(){
   let voronoi_diagram = voronoi.compute(voronoi_sites, bbox);
   let svgContainer = document.getElementById("svg_container");
   svgContainer.innerHTML = ""
-  svgContainer.appendChild(GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, cell_size, start_offset));
+  svgContainer.appendChild(GenerateSVG(voronoi_diagram, width, height, cell_size));
   document.getElementById("print_button").style.display = "inline-block";
 }
 
-function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, cell_size, start_offset){
+function GenerateSVG(voronoi_diagram, width, height, cell_size){
+  let line_thickness = habitData.line_thickness;
+  let add_dates = habitData.add_dates;
+  let start_offset = habitData.start_offset;
   const svg1 = document.createElementNS(svgNS, "svg");
   svg1.setAttribute("width", width+6);
   svg1.setAttribute("height", height+6);
@@ -118,7 +120,8 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, 
   svg1.appendChild(borderRect);
 
   if (add_dates) {
-    const today = new Date();
+    const today = new Date(0);
+    today.setUTCMilliseconds(habitData.createdAtEpoch);
     let sorted_cells = CenterAndSortCells(voronoi_diagram.cells, cell_size);
     for (let i = 0; i < sorted_cells.length; i++) {
       let d = today.addDays(i + start_offset);
