@@ -3,11 +3,18 @@
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const svgNS = "http://www.w3.org/2000/svg";
 const HABIT_DATA_KEY = 'habitData';
-
+const FILLED_CELLS_KEY = 'filledCells';
+let filledCells = null;
+let habitData = null;
 function InitializeData(){
+  const filledCellsString = localStorage.getItem(FILLED_CELLS_KEY);
+  if(filledCellsString){
+    filledCells = JSON.parse(filledCellsString);
+  }
+
   const habitDataString = localStorage.getItem(HABIT_DATA_KEY);
   if(habitDataString){
-    const habitData = JSON.parse(habitDataString);
+    habitData = JSON.parse(habitDataString);
     document.getElementById("habit_name").value = habitData.habit_name;
     document.getElementById("habit_description").value = habitData.habit_desc;
     document.getElementById("num_cells").value = habitData.num_cells;
@@ -15,10 +22,9 @@ function InitializeData(){
     document.getElementById("line_thickness").value = habitData.line_thickness;
     document.getElementById("add_date_checkbox").checked = habitData.add_dates;
     document.getElementById("start_offset").value = habitData.start_offset;
-    GenerateFromData(habitData);
+    GenerateFromData();
   }
 }
-
 
 function Generate(){
   let habit_name = document.getElementById("habit_name").value;
@@ -37,7 +43,7 @@ function Generate(){
   
   let lastSeed = Math.random();
 
-  const habitData = {
+  habitData = {
     habit_name,
     habit_desc,
     num_cells,
@@ -51,10 +57,14 @@ function Generate(){
   const habitDataString = JSON.stringify(habitData);
   localStorage.setItem(HABIT_DATA_KEY, habitDataString);
 
-  GenerateFromData(habitData);
+  filledCells = new Array(num_cells).fill(false);
+  const filledCellsString = JSON.stringify(filledCells);
+  localStorage.setItem(FILLED_CELLS_KEY, filledCellsString);
+
+  GenerateFromData();
 }
 
-function GenerateFromData(habitData){
+function GenerateFromData(){
   let habit_name = habitData.habit_name;
   let habit_desc = habitData.habit_desc;
   let num_cells = habitData.num_cells;
@@ -96,37 +106,28 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, 
   svg1.setAttribute("width", width+6);
   svg1.setAttribute("height", height+6);
 
-  let line_style_text = "stroke:rgb(0,0,0);stroke-width:" + line_thickness + ";"
-  let rect_style_text = "stroke:rgb(0,0,0);stroke-width:" + line_thickness + ";fill-opacity:0;"
-  for (let i = 0; i < voronoi_diagram.edges.length; i++) {
-    let edge = voronoi_diagram.edges[i];
-    let svg_line = document.createElementNS(svgNS, "line");
-    svg_line.setAttribute("x1", edge.va.x+3);
-    svg_line.setAttribute("y1", edge.va.y+3);
-    svg_line.setAttribute("x2", edge.vb.x+3);
-    svg_line.setAttribute("y2", edge.vb.y+3);
-    svg_line.setAttribute("style", line_style_text);
-    svg1.appendChild(svg_line);
-  }
+  let line_style_text = "stroke:rgb(0,0,0);stroke-width:" + line_thickness + ";";
+  let rect_style_text = "stroke:rgb(0,0,0);stroke-width:" + line_thickness + ";fill-opacity:0;";
+
   let borderRect = document.createElementNS(svgNS, "rect");
   borderRect.setAttribute("x", 2);
   borderRect.setAttribute("y", 2);
-  borderRect.setAttribute("width", width+1);
-  borderRect.setAttribute("height", height+1);
+  borderRect.setAttribute("width", width + 1);
+  borderRect.setAttribute("height", height + 1);
   borderRect.setAttribute("style", rect_style_text);
   svg1.appendChild(borderRect);
 
-  if(add_dates){
+  if (add_dates) {
     const today = new Date();
     let sorted_cells = CenterAndSortCells(voronoi_diagram.cells, cell_size);
     for (let i = 0; i < sorted_cells.length; i++) {
-      let d = today.addDays(i+start_offset);
+      let d = today.addDays(i + start_offset);
       let cell = sorted_cells[i];
       let newText = document.createElementNS(svgNS,"text");
       newText.setAttributeNS(null,"x", cell.center_point.x);     
       newText.setAttributeNS(null,"y", cell.center_point.y); 
       newText.setAttributeNS(null, "text-anchor", "middle");
-      newText.setAttributeNS(null,"font-size",cell_size/6);
+      newText.setAttributeNS(null,"font-size", cell_size / 6);
 
       let line1 = document.createElementNS(svgNS, "tspan");
       line1.setAttributeNS(null,"x", cell.center_point.x);     
@@ -142,6 +143,34 @@ function GenerateSVG(voronoi_diagram, width, height, line_thickness, add_dates, 
       newText.appendChild(line1);
       newText.appendChild(line2);
       svg1.appendChild(newText);
+    }
+  }
+
+  for (let i = 0; i < voronoi_diagram.cells.length; i++) {
+    let cell = voronoi_diagram.cells[i];
+    if (cell) {
+      let svg_polygon = document.createElementNS(svgNS, "polygon");
+      let points = cell.halfedges.map(edge => {
+        let start = edge.getStartpoint();
+        return `${start.x + 3},${start.y + 3}`;
+      }).join(" ");
+
+      let fillColor = filledCells && filledCells[i] ? "black" : "none";
+
+      svg_polygon.setAttribute("points", points);
+      svg_polygon.setAttribute("style", `fill:${fillColor};stroke:black;stroke-width:${line_thickness};pointer-events:all;`);
+      svg_polygon.style.cursor = "pointer";  // Show pointer cursor on hover
+
+      svg_polygon.addEventListener('click', () => {
+        if(filledCells){
+          filledCells[i] = !filledCells[i];
+          const filledCellsString = JSON.stringify(filledCells);
+          localStorage.setItem(FILLED_CELLS_KEY, filledCellsString);
+          GenerateFromData();
+        }
+      });
+
+      svg1.appendChild(svg_polygon);
     }
   }
 
